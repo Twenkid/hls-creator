@@ -1,4 +1,5 @@
-Based on: lebougui/hls-creator. Playing with the script, fixing mistake in the example, debugging, adding function to generate HLS streams complying with the Apple standard.
+Based on: lebougui/hls-creator. Playing with the script, fixing a mistake in the  (bandwidth should be in bytes), debugging, adding function to generate HLS streams complying with the Apple standard.
+
 
 hls-creator
 ===========
@@ -82,7 +83,7 @@ In order to create seperate bitrate streams, pass a comma seperated list in with
 By default, transcoding for each bitrate will be forked into the background - if you wish to process the bitrates sequentially, pass the *-f* option
 
 ```
-./hls.sh -i example.avi -s 10 -b 28000,64000,128000,25600, 2000000 -f
+./hls.sh -i example.avi -s 10 -b 365000,2000000,6000000 -f
 ```
 
 In either case, in accordance with the HLS spec, the audio bitrate will remain unchanged

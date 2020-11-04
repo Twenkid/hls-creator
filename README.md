@@ -1,3 +1,5 @@
+Based on: lebougui/hls-creator. Playing with the script, fixing mistake in the example, debugging, adding function to generate HLS streams complying with the Apple standard.
+
 hls-creator
 ===========
 
@@ -37,6 +39,12 @@ So to split a video file called *example.avi* into segments of 10 seconds, we'd 
 ```
 ./hls.sh -i example.avi -s 10
 ```
+Todor: In order to split it in about 10 s, there should be keyframes around that range.
+Usually that's done by transcoding with forcing keyframes each 2 seconds (or whatever), for 30 fps e.g.:
+
+-g 60 -sc_threshold 0
+
+Otherwise the lenght of the segments may vary a lot.
 
 **Arguments**
 
@@ -68,13 +76,13 @@ As of [HLS-6](http://projects.bentasker.co.uk/jira_projects/browse/HLS-6.html) t
 In order to create seperate bitrate streams, pass a comma seperated list in with the *-b* option
 
 ```
-./hls.sh -i example.avi -s 10 -b 28,64,128,256
+./hls.sh -i example.avi -s 10 -b 28000,64000,128000,256000, 2000000
 ```
 
 By default, transcoding for each bitrate will be forked into the background - if you wish to process the bitrates sequentially, pass the *-f* option
 
 ```
-./hls.sh -i example.avi -s 10 -b 28,64,128,256 -f
+./hls.sh -i example.avi -s 10 -b 28000,64000,128000,25600, 2000000 -f
 ```
 
 In either case, in accordance with the HLS spec, the audio bitrate will remain unchanged
@@ -164,6 +172,9 @@ OPTIONS :
         Examples : 
         ./iframe.sh -l /cdn/video_TLM.m3u8 -t default (Not complete yet)
         ./iframe.sh -l /cdn/video_TLM.m3u8 -t byterange
+	
+Todor: Or rather ./iframe.sh -l cdn/video_TLM.m3u8 -t byterange
+       (No heading slash)
 
 Version       : ./iframe.sh 1.0 (2016/03/14) 
 Maintainer(s) : Lebougi 

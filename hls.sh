@@ -4,12 +4,15 @@
 # before creating an M3U8 Playlist, allowing the file to be served using HLS
 #
 #
-
+#
 ######################################################################################
 #
 # Copyright (c) 2013, Ben Tasker
 # All rights reserved.
+#
+# Todor: Modified by (whatever) Todor Arnaudov, 11.2020
 # 
+#
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
 # 
@@ -53,7 +56,7 @@ NUMTHREADS=${NUMTHREADS:-"0"}
 VIDEO_CODEC=${VIDEO_CODEC:-"libx264"}
 
 # Audio codec for the output video. Will be used as an value for the -acodec argument
-AUDIO_CODEC=${AUDIO_CODEC:-"libfdk_aac"}
+AUDIO_CODEC=${AUDIO_CODEC:-"aac"} #libfdk_aac
 
 # Additional flags for ffmpeg
 FFMPEG_FLAGS=${FFMPEG_FLAGS:-""}
@@ -157,6 +160,7 @@ output_name="$2"
 bitrate="$3"
 infile="$4"
 
+
 if [ "$VIDEO_ONLY" == "1" ]
 then
 $FFMPEG -i "$infile" \
@@ -181,6 +185,8 @@ $FFMPEG -i "$infile" \
     -vcodec "$VIDEO_CODEC" \
     -acodec "$AUDIO_CODEC" \
     -threads "$NUMTHREADS" \
+    -g 60 \
+    -sc_threshold 0 \
     -map 0 \
     -flags \
     -global_header \
@@ -194,6 +200,7 @@ $FFMPEG -i "$infile" \
     $output_name
 fi
 }
+
 
 
 function createVariantPlaylist(){
@@ -381,6 +388,7 @@ do
         esac
 done
 
+echo $SEGLENGTH
 
 if [ "$LEGACY_ARGS" == "1" ]
 then
@@ -389,6 +397,7 @@ then
 
   INPUTFILE=${INPUTFILE:-$1}
   SEGLENGTH=${SEGLENGTH:-$2}
+  echo "SEGLENGTH=", $SEGLENGTH
   if ! [ -z "$3" ]
   then
     OUTPUT_DIRECTORY=$3

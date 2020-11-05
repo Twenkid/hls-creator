@@ -159,9 +159,10 @@ playlist_name="$1"
 output_name="$2"
 bitrate="$3"
 infile="$4"
+scale="$5" # 5-th param
 
 
-if [ "$VIDEO_ONLY" == "1" ]
+if [ "$VIDEO_ONLY" == "1" ] #Don't use or if using update like the other branch
 then
 $FFMPEG -i "$infile" \
     -loglevel error -y \
@@ -175,6 +176,7 @@ $FFMPEG -i "$infile" \
     -segment_list "$playlist_name" \
     -segment_time "$SEGLENGTH" \
     -segment_format mpeg_ts \
+    -hls_flags independent_segments
     $bitrate \
     $FFMPEG_ADDITIONAL \
     $FFMPEG_FLAGS \
@@ -187,10 +189,12 @@ $FFMPEG -i "$infile" \
     -threads "$NUMTHREADS" \
     -g 60 \
     -sc_threshold 0 \
+    -vf scale="$5" \
     -map 0 \
     -flags \
     -global_header \
     -f segment \
+    -hls_flags independent_segments \
     -segment_list "$playlist_name" \
     -segment_time "$SEGLENGTH" \
     -segment_format mpeg_ts \
@@ -369,7 +373,7 @@ MYPID=$$
 LEGACY_ARGS=1
 
 # If even one argument is supplied, switch off legacy argument style
-while getopts "i:o:s:c:b:p:t:S:lfem" flag
+while getopts "i:o:s:c:b:p:t:S:r:lfem" flag
 do
 	LEGACY_ARGS=0
         case "$flag" in
@@ -385,8 +389,13 @@ do
 		t) SEGMENT_PREFIX="$OPTARG";;
 		S) SEGMENT_DIRECTORY="$OPTARG";;
 		e) ENCRYPT=1;;
+		r) RESOLUTIONS="$OPTARG";;
         esac
 done
+
+##960:540,640:360,1920:1080
+#awk '{split($RESIZE, list, "[,]"); for (i in list) print list[i] }'`
+
 
 echo $SEGLENGTH
 
@@ -482,8 +491,26 @@ fi
 # Set the bitrate
 if [ ! "$OP_BITRATES" == "" ]
 then
+      echo $RESOLUTIONS
+      read cc
       # Make the bitrate list easier to parse
       OP_BITRATES=${OP_BITRATES//,/$'\n'}
+      #RESOLUTIONS=${RESOLUTIONS//,/$'\n'}
+      IFS=',' read -ra RESOLUTION_ARRAY <<< "$RESOLUTIONS"
+      #Print the split string
+      echo "RESOLUTIONS?"
+      for i in "${RESOLUTION_ARRAY[@]}"
+      do
+          echo $i
+      done
+
+#let r=0
+#echo "$r, ${array[$r]}"
+#r=$((r+1))
+#echo "$r, ${array[$r]}"
+#r=$((r+1))
+#echo "$r, ${array[$r]}"
+
 
       # Create an array to house the pids for backgrounded tasks
       declare -a PIDS
@@ -499,8 +526,14 @@ then
       done
 
       # Now for the longer running bit, transcode the video
+      let r=0
       for br in $OP_BITRATES
       do
+          SCALE="${RESOLUTION_ARRAY[$r]}"
+          #echo "$r, $SCALE, $br"               
+          read cc    
+          r=$((r+1))
+
           #Accept bitrates as given
 	      BITRATE="-b:v ${br}"
 	      # Finally, lets build the output filename format
@@ -523,14 +556,14 @@ then
 		      fi
 
 		      # Schedule the encode
-		      createStream "$PLAYLIST_NAME" "$OUT_NAME" "$BITRATE" "$SOURCE_FILE" &
+		      createStream "$PLAYLIST_NAME" "$OUT_NAME" "$BITRATE" "$SOURCE_FILE" "$SCALE" &
+                      #createStream "$PLAYLIST_NAME" "$OUTPUT_DIRECTORY/${PLAYLIST_PREFIX}/${br}/$OUT_NAME""$SCALE"
 		      PID=$!
 		      PIDS=(${PIDS[@]} $PID)
   		      BITRATE_PROCESSES=("${BITRATE_PROCESSES[@]}" ${br})
 	      else
-		      createStream "$PLAYLIST_NAME" "$OUTPUT_DIRECTORY/${PLAYLIST_PREFIX}/${br}/$OUT_NAME" "$BITRATE" "$SOURCE_FILE"
-
-                      addstreamtype "$PLAYLIST_NAME" "$LIVE_STREAM"
+		      createStream "$PLAYLIST_NAME" "$OUTPUT_DIRECTORY/${PLAYLIST_PREFIX}/${br}/$OUT_NAME" "$BITRATE" "$SOURCE_FILE" "$SCALE"
+                      addstreamtype "$PLAYLIST_NAME" "$LIVE_STREAM" #$NO, still use VOD?
 	      fi
       done
 
@@ -624,4 +657,3 @@ if [ "$URL_INPUT_FILE" == "1" ]
 then
    rm -f $INPUTFILE
 fi
-

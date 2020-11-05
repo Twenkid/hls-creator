@@ -1,5 +1,8 @@
-Based on: lebougui/hls-creator. Playing with the script, fixing a mistake in the  (bandwidth should be in bytes), debugging, adding function to generate HLS streams complying with the Apple standard.
+Based on: lebougui/hls-creator. Playing with the script, fixing a mistake in the  (bandwidth should be in bytes), debugging, extending.
 
+-r 960x540,640x360,320x180
+
+Add resolutions for the streams (originally all is encoded in source resolution)
 
 hls-creator
 ===========
@@ -54,18 +57,22 @@ Otherwise the lenght of the segments may vary a lot.
 
 	-i [file]	Input file or UR
 	-s [s]  	Segment length (seconds)
+	-b [birates]    Output video Bitrates in bits (not kbits), comma seperated list (no spaces) for adaptive streams: 1300000,730000, ... [TO DO: convert to kbits, take in kbits*1000]
+	-r [resolutions] Per each -b param eter: 960x540,640x360, ...
+
 
     Optional Arguments:
 
 	-o [directory]	Output directory (default: ./output)
 	-c [count]	Number of segments to include in playlist (live streams only) - 0 is no limit
-	-b [bitrates]	Output video Bitrates in kb/s (comma seperated list for adaptive streams)
+	 //was -b [bitrates]	Output video Bitrates in kb/s (comma seperated list for adaptive streams)
 	-p [name]	Playlist filename prefix
 	-t [name]	Segment filename prefix
 	-l		Input is a live stream
 	-m		Create HLS Segments only with Video Stream
 	-f		Foreground encoding only (adaptive non-live streams only)
 	-S		Name of a subdirectory to put segments into
+	
 ```
 
 

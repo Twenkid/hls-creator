@@ -492,7 +492,7 @@ fi
 if [ ! "$OP_BITRATES" == "" ]
 then
       echo $RESOLUTIONS
-      read cc
+      #read cc #debug
       # Make the bitrate list easier to parse
       OP_BITRATES=${OP_BITRATES//,/$'\n'}
       #RESOLUTIONS=${RESOLUTIONS//,/$'\n'}
@@ -531,7 +531,7 @@ then
       do
           SCALE="${RESOLUTION_ARRAY[$r]}"
           #echo "$r, $SCALE, $br"               
-          read cc    
+          #read cc    #debug
           r=$((r+1))
 
           #Accept bitrates as given
